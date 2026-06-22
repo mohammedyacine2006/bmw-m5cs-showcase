@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, ArrowDown, ChevronRight, Check, Sliders, ShieldCheck } from "lucide-react";
 import { motion, Variants } from "motion/react";
+import coastalBg from "../assets/images/m5_cs_coastal_1781364769708.jpg";
+import frontBg from "../assets/images/m5_cs_front_1781364784016.jpg";
 
 /** Detect mobile viewport to simplify animations & adjust layout */
 function useIsMobile(breakpoint = 768) {
@@ -114,7 +116,7 @@ export default function Hero() {
         >
           {/* USER: Inject your hero product/vehicle image here */}
           <img
-            src="/src/assets/images/m5_cs_coastal_1781364769708.jpg"
+            src={coastalBg}
             alt="Supercar Hero Showcase"
             className={`w-full h-full select-none pointer-events-none ${
               isMobile
@@ -286,7 +288,7 @@ export default function Hero() {
             <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900">
               {/* USER: Inject secondary inset card image here */}
               <img
-                src="/src/assets/images/m5_cs_front_1781364784016.jpg"
+                src={frontBg}
                 alt="Product Aggressive Front Profile"
                 className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[4000ms] pointer-events-none select-none"
                 referrerPolicy="no-referrer"
@@ -460,7 +462,7 @@ export default function Hero() {
             <div className="relative aspect-video w-full my-6 bg-neutral-900 border border-white/10 overflow-hidden" id="config-visual-card">
               {/* USER: Change this to the configurable product preview image */}
               <img
-                src="/src/assets/images/m5_cs_front_1781364784016.jpg"
+                src={frontBg}
                 alt="Configure Preview Master"
                 className="w-full h-full object-cover object-center pointer-events-none select-none transition-all duration-700"
                 referrerPolicy="no-referrer"

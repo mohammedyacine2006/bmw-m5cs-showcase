@@ -42,8 +42,19 @@ export default function App() {
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
-    // If the user lands on any route, ensure we clean preloader states beautifully
-  }, []);
+    // Prevent scrolling during preloader intro, then restore it cleanly
+    if (showIntro) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [showIntro]);
 
   const handleIntroZoomStart = () => {
     setHasLoaded(true);
