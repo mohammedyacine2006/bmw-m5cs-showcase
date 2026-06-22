@@ -1,0 +1,6 @@
+{
+  "name": "Supercar Landing Page Template",
+  "description": "A high-fidelity, luxury automotive/high-end product showcase template featuring a premium dark theme, interactive configurator, custom schematics graphics, smooth scrolling, and dynamic CSS styling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
