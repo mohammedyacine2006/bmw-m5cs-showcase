@@ -35,6 +35,8 @@ export default function Specs() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [preferredCenter, setPreferredCenter] = useState("Silicon Valley Elite Vaults");
   const [commissionSubmitted, setCommissionSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Technical Specs Data Array - USER: Edit metric details for product template
   const specsData: SpecDetail[] = [
@@ -72,13 +74,37 @@ export default function Specs() {
     }
   ];
 
-  const handleCommissionSubmit = (e: React.FormEvent) => {
+  const handleCommissionSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!fullName || !emailAddress || !phoneNumber) {
       alert("Please fill in all requested fields to validate the premium commission slot.");
       return;
     }
-    setCommissionSubmitted(true);
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      formData.append("access_key", "35a685e8-efcc-49fe-951f-130ea0a4da86");
+
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setCommissionSubmitted(true);
+      } else {
+        setSubmitError(data.message || "Failed to submit request. Please try again.");
+      }
+    } catch (err) {
+      setSubmitError("A connection error occurred. Please verify your secure link and retry.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCloseCommissionModal = () => {
@@ -87,6 +113,7 @@ export default function Specs() {
     setFullName("");
     setEmailAddress("");
     setPhoneNumber("");
+    setSubmitError(null);
   };
 
   const containerVariants: Variants = {
@@ -337,6 +364,7 @@ export default function Specs() {
                     </label>
                     <input
                       type="text"
+                      name="Full_Name"
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
@@ -352,6 +380,7 @@ export default function Specs() {
                       </label>
                       <input
                         type="email"
+                        name="Email"
                         required
                         value={emailAddress}
                         onChange={(e) => setEmailAddress(e.target.value)}
@@ -366,6 +395,7 @@ export default function Specs() {
                       </label>
                       <input
                         type="tel"
+                        name="Phone_Number"
                         required
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
@@ -380,6 +410,7 @@ export default function Specs() {
                       Target Handover Location Center
                     </label>
                     <select
+                      name="Location"
                       value={preferredCenter}
                       onChange={(e) => setPreferredCenter(e.target.value)}
                       className="w-full bg-white/5 border-none rounded-md p-4 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#9A8051]/30 font-secondary transition-all cursor-pointer appearance-none"
@@ -400,29 +431,34 @@ export default function Specs() {
                   </p>
                 </div>
 
+                {submitError && (
+                  <div className="flex items-center gap-2.5 p-3 bg-red-950/20 border border-red-500/20 text-xs text-red-400">
+                    <ShieldAlert className="w-4.5 h-4.5 shrink-0 text-red-500" />
+                    <span className="font-secondary">{submitError}</span>
+                  </div>
+                )}
+
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="w-full py-4 bg-[#9A8051] text-black font-medium text-xs uppercase tracking-[0.25em] transition-colors hover:bg-white cursor-pointer font-sans"
+                    disabled={isSubmitting}
+                    className={`w-full py-4 bg-[#9A8051] text-black font-medium text-xs uppercase tracking-[0.25em] transition-colors hover:bg-white cursor-pointer font-sans ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    Submit Verifiable Commission Request
+                    {isSubmitting ? "INITIATING SECURE TRANSFER..." : "Submit Verifiable Commission Request"}
                   </button>
                 </div>
               </form>
             ) : (
-              <div className="text-center py-8 space-y-6" id="success-state">
+              <div className="text-center py-12 space-y-6" id="success-state">
                 <div className="inline-flex p-4 bg-[#9A8051]/10 border border-[#9A8051]/20 rounded-none mb-4 text-[#9A8051]">
-                  <UserCheck className="w-12 h-12" />
+                  <CheckCircle2 className="w-12 h-12" />
                 </div>
-                <div>
-                   <h3 className="text-2xl font-extrabold uppercase tracking-tight text-[#9A8051] font-sans">
-                    COMMISSION SLOT RECORDED
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-extrabold uppercase tracking-widest text-[#9A8051] font-sans">
+                    COMMISSION SECURED
                   </h3>
-                  <p className="text-xs text-neutral-300 mt-2 max-w-sm mx-auto leading-relaxed font-secondary font-medium">
-                    Thank you, <span className="text-white font-bold">{fullName}</span>. Your slot reservation identifier code is <span className="text-amber-400 font-bold font-mono">#RES-363-{Math.floor(10000 + Math.random() * 90000)}</span>.
-                  </p>
-                  <p className="text-xs text-neutral-400 mt-3 max-w-sm mx-auto leading-relaxed font-secondary">
-                    An executive consultation dossier has been compiled and forwarded to your secured address: <span className="text-white font-mono">{emailAddress}</span>.
+                  <p className="text-xs sm:text-sm text-neutral-300 max-w-sm mx-auto leading-relaxed font-secondary">
+                    An executive consultant will contact you shortly.
                   </p>
                 </div>
 

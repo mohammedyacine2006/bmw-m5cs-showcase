@@ -1,44 +1,70 @@
 import React, { useState } from "react";
-import { Mail, ShieldCheck, MailCheck, Send, Clock, MapPin, Phone, ArrowLeft, Users } from "lucide-react";
+import { Mail, ShieldCheck, MailCheck, Send, Clock, MapPin, Phone, ArrowLeft, Users, ShieldAlert } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function ContactPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "Premium Platform Bespoke Interest",
-    message: ""
+    Full_Name: "",
+    Email: "",
+    Subject: "Premium Platform Bespoke Interest",
+    Message: ""
   });
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
   const [ticketId, setTicketId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) {
+    if (!formData.Full_Name || !formData.Email || !formData.Message) {
       alert("Please complete the required formulation parameters.");
       return;
     }
 
-    // Generate a unique cryptographic-style ticket ID
-    const randomID = `PRV-M-${Math.floor(100000 + Math.random() * 900000)}`;
-    setTicketId(randomID);
-    setIsSubmitSuccessful(true);
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const dataToSend = new FormData(e.currentTarget);
+      dataToSend.append("access_key", "35a685e8-efcc-49fe-951f-130ea0a4da86");
+
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: dataToSend
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Generate a unique cryptographic-style ticket ID
+        const randomID = `PRV-M-${Math.floor(100000 + Math.random() * 900000)}`;
+        setTicketId(randomID);
+        setIsSubmitSuccessful(true);
+      } else {
+        setSubmitError(data.message || "Failed to submit request. Please try again.");
+      }
+    } catch (err) {
+      setSubmitError("A connection error occurred. Please verify your secure link and retry.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setFormData({
-      name: "",
-      email: "",
-      subject: "Premium Platform Bespoke Interest",
-      message: ""
+      Full_Name: "",
+      Email: "",
+      Subject: "Premium Platform Bespoke Interest",
+      Message: ""
     });
     setIsSubmitSuccessful(false);
+    setSubmitError(null);
   };
 
   return (
@@ -147,9 +173,9 @@ export default function ContactPage() {
                     </label>
                     <input
                       type="text"
-                      name="name"
+                      name="Full_Name"
                       required
-                      value={formData.name}
+                      value={formData.Full_Name}
                       onChange={handleInputChange}
                       placeholder="e.g. Alexander Vance"
                       className="w-full bg-black border border-[#4f5e55]/50 focus:border-[#9A8051] text-xs text-white p-3.5 outline-none font-secondary rounded-none"
@@ -162,9 +188,9 @@ export default function ContactPage() {
                     </label>
                     <input
                       type="email"
-                      name="email"
+                      name="Email"
                       required
-                      value={formData.email}
+                      value={formData.Email}
                       onChange={handleInputChange}
                       placeholder="e.g. alex@vance-holdings.com"
                       className="w-full bg-black border border-[#4f5e55]/50 focus:border-[#9A8051] text-xs text-white p-3.5 outline-none font-secondary rounded-none"
@@ -178,8 +204,8 @@ export default function ContactPage() {
                     Subject Classification
                   </label>
                   <select
-                    name="subject"
-                    value={formData.subject}
+                    name="Subject"
+                    value={formData.Subject}
                     onChange={handleInputChange}
                     className="w-full bg-black border border-[#4f5e55]/50 focus:border-[#9A8051] text-xs text-white p-3.5 outline-none font-secondary rounded-none cursor-pointer"
                   >
@@ -196,24 +222,32 @@ export default function ContactPage() {
                     Classified Message Report Specifications
                   </label>
                   <textarea
-                    name="message"
+                    name="Message"
                     required
                     rows={4}
-                    value={formData.message}
+                    value={formData.Message}
                     onChange={handleInputChange}
                     placeholder="Provide performance requirements, custom interior colors, and/or dealership location coordinates here..."
                     className="w-full bg-black border border-[#4f5e55]/50 focus:border-[#9A8051] text-xs text-white p-3.5 outline-none font-secondary rounded-none resize-none"
                   />
                 </div>
 
+                {submitError && (
+                  <div className="flex items-center gap-2.5 p-3 bg-red-950/20 border border-red-500/20 text-xs text-red-400">
+                    <ShieldAlert className="w-4.5 h-4.5 shrink-0 text-red-500" />
+                    <span className="font-secondary">{submitError}</span>
+                  </div>
+                )}
+
                 {/* Submit button */}
                 <button
                   type="submit"
-                  className="w-full py-4 bg-[#9A8051] hover:bg-white text-black font-bold text-xs uppercase tracking-[0.25em] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer rounded-none"
+                  disabled={isSubmitting}
+                  className={`w-full py-4 bg-[#9A8051] hover:bg-white text-black font-bold text-xs uppercase tracking-[0.25em] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer rounded-none ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
                   id="submit-contact-button"
                 >
                   <Send className="w-4 h-4 stroke-[2.5]" />
-                  <span>TRANSMIT SECURITY LOGS</span>
+                  <span>{isSubmitting ? "TRANSMITTING ENCRYPTED DATA..." : "TRANSMIT SECURITY LOGS"}</span>
                 </button>
               </form>
             ) : (
@@ -224,10 +258,10 @@ export default function ContactPage() {
 
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black uppercase text-[#9A8051] tracking-tight font-sans">
-                    SPEC TRANSMITTED.
+                    TRANSMISSION SUCCESSFUL
                   </h3>
                   <p className="text-xs text-neutral-300 leading-relaxed font-secondary max-w-md mx-auto">
-                    The registration request has been secure compiled and forwarded to the Special Operations Database. Welcome to the elite roster.
+                    An M-Specialist will contact you within the 3-hour operational window.
                   </p>
                 </div>
 
@@ -240,11 +274,11 @@ export default function ContactPage() {
                   </div>
                   <div className="flex justify-between py-1 border-b border-white/5">
                     <span className="text-neutral-500 uppercase text-[9px] font-bold">Sender profile:</span>
-                    <span className="text-white text-[10px] font-bold truncate max-w-[200px]">{formData.name} ({formData.email})</span>
+                    <span className="text-white text-[10px] font-bold truncate max-w-[200px]">{formData.Full_Name} ({formData.Email})</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-white/5">
                     <span className="text-neutral-500 uppercase text-[9px] font-bold">Classification:</span>
-                    <span className="text-white text-[10px] uppercase font-bold text-right">{formData.subject}</span>
+                    <span className="text-white text-[10px] uppercase font-bold text-right">{formData.Subject}</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-neutral-500 uppercase text-[9px] font-bold">Status:</span>
