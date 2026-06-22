@@ -3,6 +3,7 @@ import { Menu, X, ArrowDown, ChevronRight, Check, Sliders, ShieldCheck } from "l
 import { motion, Variants } from "motion/react";
 import coastalBg from "../assets/images/m5_cs_coastal_1781364769708.jpg";
 import frontBg from "../assets/images/m5_cs_front_1781364784016.jpg";
+import { sanityClient } from "../sanityClient";
 
 /** Detect mobile viewport to simplify animations & adjust layout */
 function useIsMobile(breakpoint = 768) {
@@ -49,6 +50,31 @@ export default function Hero() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  interface ShowcaseData {
+    heroTitle?: string;
+    heroDescription?: string;
+    enginePower?: string;
+    launchBenchmark?: string;
+    heroImageUrl?: string;
+  }
+
+  const [showcaseData, setShowcaseData] = useState<ShowcaseData | null>(null);
+
+  useEffect(() => {
+    sanityClient
+      .fetch<ShowcaseData | null>(
+        `*[_type == "showcase"][0]{..., "heroImageUrl": heroImage.asset->url}`
+      )
+      .then((data) => {
+        if (data) {
+          setShowcaseData(data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to retrieve showcase telemetry data from Sanity CMS:", err);
+      });
+  }, []);
   
   // Setup Variables for Buyer Customization
   const activeSeries = "M5";
@@ -116,7 +142,7 @@ export default function Hero() {
         >
           {/* USER: Inject your hero product/vehicle image here */}
           <img
-            src={coastalBg}
+            src={showcaseData?.heroImageUrl || coastalBg}
             alt="Supercar Hero Showcase"
             className={`w-full h-full select-none pointer-events-none ${
               isMobile
@@ -206,7 +232,15 @@ export default function Hero() {
         </span>
         <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-9xl tracking-tighter uppercase font-black drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)] select-none leading-none font-serif italic" id="giant-m5-text">
           {/* USER: Replace Model Name */ }
-          <span className="bg-gradient-to-r from-[#FFFFFF] to-[#E2E8F0] bg-clip-text text-transparent">{activeSeries}</span> <span className="bg-gradient-to-r from-[#C5A059] to-[#A38A5E] bg-clip-text text-transparent">{activeModel}</span>
+          {showcaseData?.heroTitle ? (
+            <span className="bg-gradient-to-r from-[#FFFFFF] via-[#E2E8F0] to-[#C5A059] bg-clip-text text-transparent">
+              {showcaseData.heroTitle}
+            </span>
+          ) : (
+            <>
+              <span className="bg-gradient-to-r from-[#FFFFFF] to-[#E2E8F0] bg-clip-text text-transparent">{activeSeries}</span> <span className="bg-gradient-to-r from-[#C5A059] to-[#A38A5E] bg-clip-text text-transparent">{activeModel}</span>
+            </>
+          )}
         </h1>
         <span className="text-[8px] font-mono tracking-[0.25em] text-white/40 uppercase mt-2 block">
           M5 CS // FOUNDER'S EDITION
@@ -237,7 +271,9 @@ export default function Hero() {
               LAUNCH BENCHMARK
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-sans">3.0s</span>
+              <span className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-sans">
+                {showcaseData?.launchBenchmark || "3.0s"}
+              </span>
               <span className="text-[10px] text-white/60 font-sans tracking-wide uppercase">0-100 KM/H</span>
             </div>
           </div>
@@ -247,7 +283,9 @@ export default function Hero() {
               ENGINE POWER
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-sans">627 HP</span>
+              <span className="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-sans">
+                {showcaseData?.enginePower || "627 HP"}
+              </span>
               <span className="text-[10px] text-white/60 font-sans tracking-wide uppercase">V8 Twin-Turbo</span>
             </div>
           </div>
